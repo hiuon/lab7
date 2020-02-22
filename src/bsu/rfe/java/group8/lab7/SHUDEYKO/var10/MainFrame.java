@@ -2,6 +2,8 @@ package bsu.rfe.java.group8.lab7.SHUDEYKO.var10;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class MainFrame extends JFrame {
 
@@ -41,6 +43,17 @@ public class MainFrame extends JFrame {
 
         textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS, 0);
         final JScrollPane scrollPaneOutgoing = new JScrollPane(textAreaOutgoing);
+
+        final JPanel messagePanel = new JPanel();
+        messagePanel.setBorder(BorderFactory.createTitledBorder("Сообщение"));
+
+        final JButton sendButton = new JButton("Отправить");
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage();
+            }
+        });
 
     }
 
