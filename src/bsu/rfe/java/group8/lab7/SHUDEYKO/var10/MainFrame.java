@@ -83,6 +83,36 @@ public class MainFrame extends JFrame {
                 .addComponent(messagePanel)
                 .addContainerGap());
 
+        final GroupLayout layout = new GroupLayout(messagePanel);
+        messagePanel.setLayout(layout);
+
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(labelFrom)
+                                .addGap(SMALL_GAP)
+                                .addComponent(textFieldFrom)
+                                .addGap(LARGE_GAP)
+                                .addComponent(labelTo)
+                                .addGap(SMALL_GAP)
+                                .addComponent(textFieldTo))
+                        .addComponent(scrollPaneOutgoing)
+                        .addComponent(sendButton))
+                .addContainerGap());
+        layout.setVerticalGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(labelFrom)
+                        .addComponent(textFieldFrom)
+                        .addComponent(labelTo)
+                        .addComponent(textFieldTo))
+                .addGap(MEDIUM_GAP)
+                .addComponent(scrollPaneOutgoing)
+                .addGap(MEDIUM_GAP)
+                .addComponent(sendButton)
+                .addContainerGap());
+
         new Thread(new Runnable() {
             @Override
             public void run() {
