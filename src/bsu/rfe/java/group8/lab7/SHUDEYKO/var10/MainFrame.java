@@ -33,6 +33,10 @@ public class MainFrame extends JFrame {
 
     private final static int SERVER_PORT = 4567;
 
+    private static final int SMALL_GAP = 5;
+    private static final int MEDIUM_GAP = 10;
+    private static final int LARGE_GAP = 15;
+
     public MainFrame() {
         super(FRAME_TITLE);
         setSize(WIDTH, HEIGHT);
@@ -63,6 +67,21 @@ public class MainFrame extends JFrame {
                 sendMessage();
             }
         });
+
+        final GroupLayout layout1 = new GroupLayout(getContentPane());
+        setLayout(layout1);
+        layout1.setHorizontalGroup(layout1.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout1.createParallelGroup()
+                        .addComponent(scrollPaneIncoming)
+                        .addComponent(messagePanel))
+                .addContainerGap());
+        layout1.setVerticalGroup(layout1.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(scrollPaneIncoming)
+                .addGap(MEDIUM_GAP)
+                .addComponent(messagePanel)
+                .addContainerGap());
 
         new Thread(new Runnable() {
             @Override
@@ -116,7 +135,7 @@ public class MainFrame extends JFrame {
 
             out.writeUTF(senderName);
             out.writeUTF(message);
-            
+
             socket.close();
 
             textAreaIncoming.append("Я -> " + destinationAddress + ": " + message + "\n");
