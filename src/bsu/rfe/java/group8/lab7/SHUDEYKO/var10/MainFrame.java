@@ -37,6 +37,8 @@ public class MainFrame extends JFrame {
     private static final int MEDIUM_GAP = 10;
     private static final int LARGE_GAP = 15;
 
+    private InstantMessenger instantMessenger;
+
     public MainFrame() {
         super(FRAME_TITLE);
         setSize(WIDTH, HEIGHT);
