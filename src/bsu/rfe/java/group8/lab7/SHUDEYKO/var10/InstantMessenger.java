@@ -1,8 +1,15 @@
 package bsu.rfe.java.group8.lab7.SHUDEYKO.var10;
 
+import java.util.ArrayList;
+
 public class InstantMessenger implements MessageListener {
 
     private String sender;
+    private ArrayList<MessageListener> listeners = new ArrayList<MessageListener>(10);
+
+    public InstantMessenger(){
+
+    }
 
     public void setSender(String sender){
         this.sender = sender;
@@ -12,10 +19,6 @@ public class InstantMessenger implements MessageListener {
         return sender;
     }
 
-    public InstantMessenger(){
-
-    }
-
     public void sendMessage(){
 
     }
@@ -23,6 +26,20 @@ public class InstantMessenger implements MessageListener {
     private void startServer(){
 
     }
+
+    public void addMessageListener(MessageListener listener){
+        synchronized (listeners){
+            listeners.add(listener);
+        }
+    }
+
+    public void removeMessageListener(MessageListener listener){
+        synchronized (listeners){
+            listeners.remove(listener);
+        }
+    }
+
+    
 
     @Override
     public void messageReceived(String senderName, String message) {
