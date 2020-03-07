@@ -4,13 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class MainFrame extends JFrame {
 
@@ -28,7 +21,7 @@ public class MainFrame extends JFrame {
     private static final int FROM_FIELD_DEFAULT_COLUMNS = 10;
     private static final int TO_FIELD_DEFAULT_COLUMNS = 20;
 
-    private final JTextField textFieldFrom;
+    private JLabel textFieldFrom;
     private final JTextField textFieldTo;
 
     private final static int SERVER_PORT = 4567;
@@ -38,6 +31,8 @@ public class MainFrame extends JFrame {
     private static final int LARGE_GAP = 15;
 
     private InstantMessenger instantMessenger;
+    private Peer peer;
+    private boolean isLog = false;
 
     public MainFrame() {
         super(FRAME_TITLE);
@@ -50,10 +45,9 @@ public class MainFrame extends JFrame {
 
         final JScrollPane scrollPaneIncoming = new JScrollPane(textAreaIncoming);
 
-        final JLabel labelFrom = new JLabel("Подпись");
+        final JLabel labelFrom = new JLabel("Подпись:");
         final JLabel labelTo = new JLabel("Получатель");
 
-        textFieldFrom = new JTextField(FROM_FIELD_DEFAULT_COLUMNS);
         textFieldTo = new JTextField(TO_FIELD_DEFAULT_COLUMNS);
 
         textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS, 0);
@@ -66,57 +60,77 @@ public class MainFrame extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                instantMessenger.sendMessage();
+                peer.setPeer(textFieldFrom.getText(), textFieldTo.getText());
+                instantMessenger.sendMessage(peer);
             }
         });
 
-        final GroupLayout layout1 = new GroupLayout(getContentPane());
-        setLayout(layout1);
-        layout1.setHorizontalGroup(layout1.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout1.createParallelGroup()
-                        .addComponent(scrollPaneIncoming)
-                        .addComponent(messagePanel))
-                .addContainerGap());
-        layout1.setVerticalGroup(layout1.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(scrollPaneIncoming)
-                .addGap(MEDIUM_GAP)
-                .addComponent(messagePanel)
-                .addContainerGap());
-
-        final GroupLayout layout = new GroupLayout(messagePanel);
-        messagePanel.setLayout(layout);
-
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(labelFrom)
-                                .addGap(SMALL_GAP)
-                                .addComponent(textFieldFrom)
-                                .addGap(LARGE_GAP)
-                                .addComponent(labelTo)
-                                .addGap(SMALL_GAP)
-                                .addComponent(textFieldTo))
-                        .addComponent(scrollPaneOutgoing)
-                        .addComponent(sendButton))
-                .addContainerGap());
-        layout.setVerticalGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                        .addComponent(labelFrom)
-                        .addComponent(textFieldFrom)
-                        .addComponent(labelTo)
-                        .addComponent(textFieldTo))
-                .addGap(MEDIUM_GAP)
-                .addComponent(scrollPaneOutgoing)
-                .addGap(MEDIUM_GAP)
-                .addComponent(sendButton)
-                .addContainerGap());
-
         instantMessenger = new InstantMessenger(this);
+
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        JMenu chatMenu = new JMenu("Меню");
+
+        Action logInAction = new AbstractAction("Вход") {
+
+            public void actionPerformed(ActionEvent e) {
+                if (isLog == false){
+                    isLog = true;
+                    chatMenu.setVisible(false);
+                }
+                String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для общения", "Вход", JOptionPane.QUESTION_MESSAGE);
+                instantMessenger.setSender(value);
+                textFieldFrom = new JLabel(value);
+                final GroupLayout layout1 = new GroupLayout(getContentPane());
+                setLayout(layout1);
+                layout1.setHorizontalGroup(layout1.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout1.createParallelGroup()
+                                .addComponent(scrollPaneIncoming)
+                                .addComponent(messagePanel))
+                        .addContainerGap());
+                layout1.setVerticalGroup(layout1.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(scrollPaneIncoming)
+                        .addGap(MEDIUM_GAP)
+                        .addComponent(messagePanel)
+                        .addContainerGap());
+
+                final GroupLayout layout = new GroupLayout(messagePanel);
+                messagePanel.setLayout(layout);
+
+                layout.setHorizontalGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createSequentialGroup()
+                                        .addComponent(labelFrom)
+                                        .addGap(SMALL_GAP)
+                                        .addComponent(textFieldFrom)
+                                        .addGap(LARGE_GAP)
+                                        .addComponent(labelTo)
+                                        .addGap(SMALL_GAP)
+                                        .addComponent(textFieldTo))
+                                .addComponent(scrollPaneOutgoing)
+                                .addComponent(sendButton))
+                        .addContainerGap());
+                layout.setVerticalGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(labelFrom)
+                                .addComponent(textFieldFrom)
+                                .addComponent(labelTo)
+                                .addComponent(textFieldTo))
+                        .addGap(MEDIUM_GAP)
+                        .addComponent(scrollPaneOutgoing)
+                        .addGap(MEDIUM_GAP)
+                        .addComponent(sendButton)
+                        .addContainerGap());
+            }
+        };
+        menuBar.add(chatMenu);
+        chatMenu.add(logInAction);
 }
+
 
     public JTextArea getTextAreaOutgoing() {
         return textAreaOutgoing;

@@ -4,11 +4,8 @@ public class Peer {
     private String name;
     private String address;
 
-    public void setName(String name){
+    public void setPeer(String name, String address){
         this.name = name;
-    }
-
-    public void setAddress(String address){
         this.address = address;
     }
 

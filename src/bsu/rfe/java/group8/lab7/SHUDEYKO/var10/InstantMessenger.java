@@ -29,10 +29,10 @@ public class InstantMessenger implements MessageListener {
         return sender;
     }
 
-    public void sendMessage(){
+    public void sendMessage(Peer peer){
         try{
-            final String senderName = textFieldFrom.getText();
-            final String destinationAddress = textFieldTo.getText();
+            final String senderName = this.getSender();
+            final String destinationAddress = peer.getAddress();
             final String message = frame.getTextAreaOutgoing().getText();
 
             if (senderName.isEmpty()) {
