@@ -81,6 +81,8 @@ public class MainFrame extends JFrame {
                 String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для общения", "Вход", JOptionPane.QUESTION_MESSAGE);
                 instantMessenger.setSender(value);
                 textFieldFrom = new JLabel(value);
+                Font  f2  = new Font(Font.SANS_SERIF,  Font.BOLD, 10);
+                textFieldFrom.setFont(f2);
                 final GroupLayout layout1 = new GroupLayout(getContentPane());
                 setLayout(layout1);
                 layout1.setHorizontalGroup(layout1.createSequentialGroup()
