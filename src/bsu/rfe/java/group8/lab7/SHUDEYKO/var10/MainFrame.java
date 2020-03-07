@@ -66,7 +66,7 @@ public class MainFrame extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sendMessage();
+                instantMessenger.sendMessage();
             }
         });
 
@@ -115,74 +115,20 @@ public class MainFrame extends JFrame {
                 .addComponent(sendButton)
                 .addContainerGap());
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+        instantMessenger = new InstantMessenger(this);
+}
 
-                    while (!Thread.interrupted()) {
-                        final Socket socket = serverSocket.accept();
-                        final DataInputStream in = new DataInputStream(socket.getInputStream());
-
-                        final String senderName = in.readUTF();
-                        final String message = in.readUTF();
-
-                        socket.close();
-
-                        final String address = ((InetSocketAddress) socket.getRemoteSocketAddress()).getAddress().getHostAddress();
-                        textAreaIncoming.append(senderName + " (" + address + "): " + message + "\n");
-                    }
-
-                } catch (IOException E) {
-                    E.printStackTrace();
-                    JOptionPane.showMessageDialog(MainFrame.this, "Ошібка в работе сервера", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }).start();
+    public JTextArea getTextAreaOutgoing() {
+        return textAreaOutgoing;
     }
 
-    private void sendMessage(){
-        try{
-            final String senderName = textFieldFrom.getText();
-            final String destinationAddress = textFieldTo.getText();
-            final String message = textAreaOutgoing.getText();
-
-            if (senderName.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Введите имя отправителя", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (destinationAddress.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Введите адрес узла-получателя", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (message.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Введите текст сообщения", "Ошибка", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            final Socket socket = new Socket(destinationAddress, SERVER_PORT);
-
-            final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
-            out.writeUTF(senderName);
-            out.writeUTF(message);
-
-            socket.close();
-
-            textAreaIncoming.append("Я -> " + destinationAddress + ": " + message + "\n");
-            textAreaOutgoing.setText("");
-
-        } catch (UnknownHostException E){
-            E.printStackTrace();
-            JOptionPane.showMessageDialog(MainFrame.this, "Не удалось отправить сообщение: узел-адресат не найден","Ошибка", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(MainFrame.this, "Не удалось отправить сообщение", "Ошибка", JOptionPane.ERROR_MESSAGE);
-        }
+    public int getServerPort() {
+        return SERVER_PORT;
     }
 
-
+    public JTextArea getTextAreaIncoming() {
+        return textAreaIncoming;
+    }
 
     public static void main(String args[]){
         SwingUtilities.invokeLater(new Runnable() {
