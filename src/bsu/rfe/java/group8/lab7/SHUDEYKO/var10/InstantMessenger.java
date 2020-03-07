@@ -39,10 +39,16 @@ public class InstantMessenger implements MessageListener {
         }
     }
 
-    
+    private void notifyListeners(Peer sender, String message){
+        synchronized (listeners){
+            for (MessageListener listener : listeners){
+                listener.messageReceived(sender, message);
+            }
+        }
+    }
 
     @Override
-    public void messageReceived(String senderName, String message) {
+    public void messageReceived(Peer senderName, String message) {
         
     }
 }
