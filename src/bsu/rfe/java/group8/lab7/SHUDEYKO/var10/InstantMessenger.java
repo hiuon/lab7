@@ -1,6 +1,12 @@
 package bsu.rfe.java.group8.lab7.SHUDEYKO.var10;
 
 import javax.swing.*;
+import javax.swing.text.*;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -57,7 +63,7 @@ public class InstantMessenger implements MessageListener {
 
             socket.close();
 
-            frame.getTextAreaIncoming().append("Я -> " + destinationAddress + ": " + message + "\n");
+            append("Я -> " + destinationAddress + ": " + message +"\n", frame.getTextAreaIncoming());
             frame.getTextAreaOutgoing().setText("");
 
         } catch (UnknownHostException E){
@@ -66,6 +72,8 @@ public class InstantMessenger implements MessageListener {
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(frame, "Не удалось отправить сообщение", "Ошибка", JOptionPane.ERROR_MESSAGE);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
     }
 
@@ -86,16 +94,38 @@ public class InstantMessenger implements MessageListener {
                         socket.close();
 
                         final String address = ((InetSocketAddress) socket.getRemoteSocketAddress()).getAddress().getHostAddress();
-                        frame.getTextAreaIncoming().append(senderName + " (" + address + "): " + message + "\n");
+
+                        append(senderName + "(", frame.getTextAreaIncoming());
+                        appendHyperlink(address, frame);
+                        append("):"+message+"\n",frame.getTextAreaIncoming());
                     }
 
-                } catch (IOException E) {
+                } catch (IOException | BadLocationException E) {
                     E.printStackTrace();
                     JOptionPane.showMessageDialog(frame, "Ошибка в работе сервера", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }).start();
     }
+
+    public void append(String s, JTextPane pane) throws IOException, BadLocationException {
+        StyledDocument doc = pane.getStyledDocument();
+        doc.insertString(doc.getLength(), s, null);
+        pane.setDocument(doc);
+    }
+
+    public void appendHyperlink(String s, MainFrame frame) throws IOException, BadLocationException {
+        StyledDocument doc = frame.getTextAreaIncoming().getStyledDocument();
+        Style def = StyleContext.getDefaultStyleContext().getStyle(StyleContext.DEFAULT_STYLE);
+        Style regularBlue = doc.addStyle("regularBlue", def);
+        StyleConstants.setForeground(regularBlue, Color.BLUE);
+        StyleConstants.setUnderline(regularBlue,true);
+        regularBlue.addAttribute("link",frame.getURLLinkAction(s));
+        doc.insertString(doc.getLength(), s, regularBlue);
+        frame.getTextAreaIncoming().setDocument(doc);
+    }
+
+
 
     public void addMessageListener(MessageListener listener){
         synchronized (listeners){

@@ -1,9 +1,16 @@
 package bsu.rfe.java.group8.lab7.SHUDEYKO.var10;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Element;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MainFrame extends JFrame {
 
@@ -12,13 +19,13 @@ public class MainFrame extends JFrame {
     private static final int WIDTH = 800;
     private static final int HEIGHT = 600;
 
-    private final JTextArea textAreaIncoming;
+    private final JTextPane textAreaIncoming;
     private final JTextArea textAreaOutgoing;
 
-    private static final int INCOMING_AREA_DEFAULT_ROWS = 10;
+    //private static final int INCOMING_AREA_DEFAULT_ROWS = 10;
     private static final int OUTGOING_AREA_DEFAULT_ROWS = 5;
 
-    private static final int FROM_FIELD_DEFAULT_COLUMNS = 10;
+    //private static final int FROM_FIELD_DEFAULT_COLUMNS = 10;
     private static final int TO_FIELD_DEFAULT_COLUMNS = 20;
 
     private JLabel textFieldFrom;
@@ -40,7 +47,9 @@ public class MainFrame extends JFrame {
         Toolkit kit = Toolkit.getDefaultToolkit();
         setLocation((kit.getScreenSize().width - WIDTH) / 2, (kit.getScreenSize().height - HEIGHT) / 2);
 
-        textAreaIncoming = new JTextArea(INCOMING_AREA_DEFAULT_ROWS, 0);
+        textAreaIncoming = new JTextPane();
+        textAreaIncoming.addMouseListener(new TextClickListener());
+        textAreaIncoming.addMouseMotionListener(new TextMotionListener());
         textAreaIncoming.setEditable(false);
 
         final JScrollPane scrollPaneIncoming = new JScrollPane(textAreaIncoming);
@@ -60,6 +69,7 @@ public class MainFrame extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                peer = new Peer();
                 peer.setPeer(textFieldFrom.getText(), textFieldTo.getText());
                 instantMessenger.sendMessage(peer);
             }
@@ -74,14 +84,14 @@ public class MainFrame extends JFrame {
         Action logInAction = new AbstractAction("Вход") {
 
             public void actionPerformed(ActionEvent e) {
-                if (isLog == false){
+                if (isLog == false) {
                     isLog = true;
                     chatMenu.setVisible(false);
                 }
                 String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для общения", "Вход", JOptionPane.QUESTION_MESSAGE);
                 instantMessenger.setSender(value);
                 textFieldFrom = new JLabel(value);
-                Font  f2  = new Font(Font.SANS_SERIF,  Font.BOLD, 10);
+                Font f2 = new Font(Font.SANS_SERIF, Font.BOLD, 10);
                 textFieldFrom.setFont(f2);
                 final GroupLayout layout1 = new GroupLayout(getContentPane());
                 setLayout(layout1);
@@ -131,29 +141,84 @@ public class MainFrame extends JFrame {
         };
         menuBar.add(chatMenu);
         chatMenu.add(logInAction);
-}
-
-
-    public JTextArea getTextAreaOutgoing() {
-        return textAreaOutgoing;
     }
 
-    public int getServerPort() {
-        return SERVER_PORT;
-    }
-
-    public JTextArea getTextAreaIncoming() {
-        return textAreaIncoming;
-    }
-
-    public static void main(String args[]){
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                final MainFrame frame = new MainFrame();
-                frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-                frame.setVisible(true);
+        private class TextClickListener extends MouseAdapter {
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    StyledDocument doc = textAreaIncoming.getStyledDocument();
+                    Element elem = doc.getCharacterElement(textAreaIncoming.viewToModel(e.getPoint()));
+                    AttributeSet as = elem.getAttributes();
+                    URLLinkAction fla = (URLLinkAction) as.getAttribute("link");
+                    if (fla != null)
+                        fla.execute();
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
             }
-        });
+        }
+
+        private class TextMotionListener extends MouseInputAdapter {
+            StyledDocument doc = textAreaIncoming.getStyledDocument();
+            public void mouseMoved(MouseEvent e) {
+
+                Element elem = doc.getCharacterElement(textAreaIncoming.viewToModel(e.getPoint()));
+                AttributeSet as = elem.getAttributes();
+                if (StyleConstants.isUnderline(as))
+                    textAreaIncoming.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                else
+                    textAreaIncoming.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
+
+    private class URLLinkAction extends AbstractAction{
+        private String url;
+
+        URLLinkAction(String bac)
+        {
+            url=bac;
+        }
+
+        protected void execute() {
+            try {
+                textFieldTo.setText(url);
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+
+        public void actionPerformed(ActionEvent e){
+            execute();
+        }
     }
-}
+
+    public URLLinkAction getURLLinkAction(String s){
+        return new URLLinkAction(s);
+    }
+        public JTextArea getTextAreaOutgoing() {
+            return textAreaOutgoing;
+        }
+
+        public int getServerPort() {
+            return SERVER_PORT;
+        }
+
+        public JTextPane getTextAreaIncoming() {
+            return textAreaIncoming;
+        }
+
+        public static void main(String args[]) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    final MainFrame frame = new MainFrame();
+                    frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+                    frame.setVisible(true);
+                }
+            });
+        }
+    }
+
