@@ -39,7 +39,7 @@ public class InstantMessenger implements MessageListener {
         try{
             final String senderName = this.getSender();
             final String[] destinationAddress = peer.getAddress().split("::");
-            final String message = frame.getTextAreaOutgoing().getText();
+            final String message = frame.getTextAreaOutgoing().getText() + "::" + Integer.toString(port);
 
             if (senderName.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Введите имя отправителя", "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -63,7 +63,7 @@ public class InstantMessenger implements MessageListener {
 
             socket.close();
 
-            append("Я -> " + destinationAddress[0]+"::"+destinationAddress[1] + ": " + message +"\n", frame.getTextAreaIncoming());
+            append("Я -> " + destinationAddress[0]+"::"+destinationAddress[1] + ": " + frame.getTextAreaOutgoing().getText() +"\n", frame.getTextAreaIncoming());
             frame.getTextAreaOutgoing().setText("");
 
         } catch (UnknownHostException E){
@@ -109,10 +109,11 @@ public class InstantMessenger implements MessageListener {
                         socket.close();
 
                         final String address = ((InetSocketAddress) socket.getRemoteSocketAddress()).getAddress().getHostAddress();
+                        String[] mes = message.split("::");
 
                         append(senderName + "(", frame.getTextAreaIncoming());
-                        appendHyperlink(address+"::"+ port, frame);
-                        append("):"+message+"\n",frame.getTextAreaIncoming());
+                        appendHyperlink(address+"::"+ mes[1], frame);
+                        append("):"+mes[0]+"\n",frame.getTextAreaIncoming());
                     }
 
                 } catch (IOException | BadLocationException E) {
