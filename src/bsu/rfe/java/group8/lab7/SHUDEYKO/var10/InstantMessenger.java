@@ -10,20 +10,20 @@ import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.ArrayList;
 
 public class InstantMessenger implements MessageListener {
-
     private  MainFrame frame;
     private String sender;
     private ArrayList<MessageListener> listeners = new ArrayList<MessageListener>(10);
+    private int port = 4567;
 
     public InstantMessenger(final MainFrame f){
         this.frame = f;
+        while(!availablePort("127.0.0.1", port)){
+            port++;
+        }
         startServer();
     }
 
@@ -38,14 +38,14 @@ public class InstantMessenger implements MessageListener {
     public void sendMessage(Peer peer){
         try{
             final String senderName = this.getSender();
-            final String destinationAddress = peer.getAddress();
+            final String[] destinationAddress = peer.getAddress().split("::");
             final String message = frame.getTextAreaOutgoing().getText();
 
             if (senderName.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Введите имя отправителя", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if (destinationAddress.isEmpty()) {
+            if (destinationAddress[0].isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Введите адрес узла-получателя", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -54,7 +54,7 @@ public class InstantMessenger implements MessageListener {
                 return;
             }
 
-            final Socket socket = new Socket(destinationAddress, frame.getServerPort());
+            final Socket socket = new Socket(destinationAddress[0], Integer.parseInt(destinationAddress[1]));
 
             final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
@@ -63,7 +63,7 @@ public class InstantMessenger implements MessageListener {
 
             socket.close();
 
-            append("Я -> " + destinationAddress + ": " + message +"\n", frame.getTextAreaIncoming());
+            append("Я -> " + destinationAddress[0]+"::"+destinationAddress[1] + ": " + message +"\n", frame.getTextAreaIncoming());
             frame.getTextAreaOutgoing().setText("");
 
         } catch (UnknownHostException E){
@@ -77,12 +77,27 @@ public class InstantMessenger implements MessageListener {
         }
     }
 
+
+    private boolean availablePort(String host, int port) {
+        boolean result = true;
+
+        try {
+            (new Socket(host, port)).close();
+
+            result = false;
+        }
+        catch(IOException e) {
+        }
+        return result;
+    }
+
     private void startServer(){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    final ServerSocket serverSocket = new ServerSocket(frame.getServerPort());
+
+                    final ServerSocket serverSocket = new ServerSocket(port);
 
                     while (!Thread.interrupted()) {
                         final Socket socket = serverSocket.accept();
@@ -96,13 +111,14 @@ public class InstantMessenger implements MessageListener {
                         final String address = ((InetSocketAddress) socket.getRemoteSocketAddress()).getAddress().getHostAddress();
 
                         append(senderName + "(", frame.getTextAreaIncoming());
-                        appendHyperlink(address, frame);
+                        appendHyperlink(address+"::"+ port, frame);
                         append("):"+message+"\n",frame.getTextAreaIncoming());
                     }
 
                 } catch (IOException | BadLocationException E) {
-                    E.printStackTrace();
-                    JOptionPane.showMessageDialog(frame, "Ошибка в работе сервера", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    //E.printStackTrace();
+                    //JOptionPane.showMessageDialog(frame, "Ошибка в работе сервера", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    startServer();
                 }
             }
         }).start();
@@ -125,7 +141,9 @@ public class InstantMessenger implements MessageListener {
         frame.getTextAreaIncoming().setDocument(doc);
     }
 
-
+    public Integer getPort(){
+        return port;
+    }
 
     public void addMessageListener(MessageListener listener){
         synchronized (listeners){

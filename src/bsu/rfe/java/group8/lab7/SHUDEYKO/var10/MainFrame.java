@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.Socket;
 
 public class MainFrame extends JFrame {
 
@@ -30,8 +32,6 @@ public class MainFrame extends JFrame {
 
     private JLabel textFieldFrom;
     private final JTextField textFieldTo;
-
-    private final static int SERVER_PORT = 4567;
 
     private static final int SMALL_GAP = 5;
     private static final int MEDIUM_GAP = 10;
@@ -75,11 +75,11 @@ public class MainFrame extends JFrame {
             }
         });
 
-        instantMessenger = new InstantMessenger(this);
-
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
         JMenu chatMenu = new JMenu("Меню");
+
+        instantMessenger = new InstantMessenger(this);
 
         Action logInAction = new AbstractAction("Вход") {
 
@@ -90,7 +90,7 @@ public class MainFrame extends JFrame {
                 }
                 String value = JOptionPane.showInputDialog(MainFrame.this, "Введите имя для общения", "Вход", JOptionPane.QUESTION_MESSAGE);
                 instantMessenger.setSender(value);
-                textFieldFrom = new JLabel(value);
+                textFieldFrom = new JLabel(instantMessenger.getPort().toString());
                 Font f2 = new Font(Font.SANS_SERIF, Font.BOLD, 10);
                 textFieldFrom.setFont(f2);
                 final GroupLayout layout1 = new GroupLayout(getContentPane());
@@ -141,8 +141,17 @@ public class MainFrame extends JFrame {
         };
         menuBar.add(chatMenu);
         chatMenu.add(logInAction);
+
+
     }
 
+    private static boolean available(int port_, String address) {
+        try (Socket ignored = new Socket(address, port_)) {
+            return false;
+        } catch (IOException ignored) {
+            return true;
+        }
+    }
         private class TextClickListener extends MouseAdapter {
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -188,8 +197,6 @@ public class MainFrame extends JFrame {
                 ex.printStackTrace();
             }
         }
-
-
         public void actionPerformed(ActionEvent e){
             execute();
         }
@@ -200,10 +207,6 @@ public class MainFrame extends JFrame {
     }
         public JTextArea getTextAreaOutgoing() {
             return textAreaOutgoing;
-        }
-
-        public int getServerPort() {
-            return SERVER_PORT;
         }
 
         public JTextPane getTextAreaIncoming() {
